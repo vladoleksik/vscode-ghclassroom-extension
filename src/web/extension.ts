@@ -18,6 +18,23 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	console.log('Got session:', session);
 
+	// TODO: Get owner of currently opened repository
+	// The owner is found in the policy assignment manifest
+	const owner = 'vladoleksik-cs-classes';
+	const repo = 'integer-operations-vladoleksik';
+
+	// Use the VS Code API to get the action workflow run artifacts from a GitHub repository
+	// (This is just an example; replace with your own logic as needed)
+	const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/artifacts`, {
+		headers: {
+			'Authorization': `Bearer ${session?.accessToken}`,
+			'Accept': 'application/vnd.github+json',
+		},
+		method: 'GET',
+	});
+	const data = await response.json();
+	console.log('Fetched GitHub Actions runs:', data);
+
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
