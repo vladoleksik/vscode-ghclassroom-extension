@@ -1,65 +1,35 @@
-# classroom-assignment README
+# GitHub Classroom Assignment Viewer
 
-This is the README for your extension "classroom-assignment". After writing up a brief description, we recommend including the following sections.
+This VS Code Web extension provides a streamlined interface for students and educators to view feedback from GitHub Classroom assignment submissions. It fetches and displays detailed information from individual student repository runs within GitHub Actions.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+*   **View Action Reports:** Access and view detailed reports generated as artifacts from GitHub Actions workflow runs.
+*   **Check Grades:** Quickly see the grade assigned to a submission.
+*   **Track Attempts:** If applicable, view the attempt number for each submission.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+To use this extension, you will need:
+
+*   A GitHub account with access to the relevant student repositories.
+*   The corresponding GitHub Classroom setup with assignments configured to run GitHub Actions.
+
+## How It Works
+
+The extension authenticates with GitHub and uses the GitHub API to find workflow runs and their associated artifacts in the student repositories linked to your account. It then parses the artifact content to display the report, grade, and other relevant feedback directly within the VS Code interface.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+This extension currently does not require any specific VS Code settings. Future updates may include settings for custom report parsing or repository filtering.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+There are currently no known issues. Please report any bugs or feature requests on the project's GitHub repository.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- Initial release of the GitHub Classroom Assignment Viewer.
+- Feature to view GitHub Actions reports, grades, and attempt numbers.
