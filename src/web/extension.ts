@@ -18,10 +18,19 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	console.log('Got session:', session);
 
+	const user = session.account.label;
+	console.log('Authenticated GitHub user:', user);
+
 	// TODO: Get owner of currently opened repository
 	// The owner is found in the policy assignment manifest
+	//if opened in a web extension host, get the repository information from the context
+	console.log('Repository context:', vscode.workspace.workspaceFolders);
+	// get the owner name from the assignment.tar file inside the workspace folder
+	/*vscode.workspace.workspaceFolders?.forEach(folder => {
+		console.log('Workspace folder:', folder.name, folder.uri.toString());
+	});*/
 	const owner = 'vladoleksik-cs-classes';
-	const repo = 'integer-operations-vladoleksik';
+	const repo = vscode.workspace.workspaceFolders?.[0].name;
 
 	// Use the VS Code API to get the action workflow run artifacts from a GitHub repository
 	// (This is just an example; replace with your own logic as needed)
@@ -34,6 +43,56 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 	const data = await response.json();
 	console.log('Fetched GitHub Actions runs:', data);
+
+	//get the last workflow run that was completed
+	const artifacts = data.artifacts;
+	if (artifacts.length > 0) {
+		const lastArtifact = artifacts[0];
+		console.log('Last artifact:', lastArtifact);
+	} else {
+		console.log('No artifacts found for this repository.');
+	}
+
+	//download the 'grading-report' artifact if it exists
+	const gradingArtifact = artifacts.find((artifact: any) => artifact.name === 'grading-report');
+	let blob: Blob = new Blob();
+	if (gradingArtifact) {
+		const downloadUrl = gradingArtifact.archive_download_url;
+		const downloadResponse = await fetch(downloadUrl, {
+			headers: {
+				'Authorization': `Bearer ${session?.accessToken}`,
+				'Accept': 'application/vnd.github+json',
+			},
+			method: 'GET',
+		});
+		blob = await downloadResponse.blob();
+		console.log('Downloaded grading report artifact:', blob);
+	} else {
+		console.log('No grading report artifact found for this repository.');
+	}
+
+	//unzip the blob and read the report.html file inside
+	const arrayBuffer = await blob.arrayBuffer();
+	const uint8Array = new Uint8Array(arrayBuffer);
+	//use the JSZip library to unzip the blob
+	const JSZip = await import('jszip');
+	const zip = await JSZip.loadAsync(uint8Array);
+	const reportFile = zip.file('report.html');
+
+	//Display the content of the report.html file in a new webview panel
+	if (reportFile) {
+		const reportContent = await reportFile.async('string');
+		const panel = vscode.window.createWebviewPanel(
+			'classroom-assignment-report',
+			'Grading Report',
+			vscode.ViewColumn.One,
+			{}
+		);
+		panel.webview.html = reportContent;
+		panel.webview.options = { enableScripts: true };
+	} else {
+		console.log('No report.html file found in the grading report artifact.');
+	}
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand

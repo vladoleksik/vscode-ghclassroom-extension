@@ -44,5 +44,8 @@
     "typescript-eslint": "^8.46.3",
     "webpack": "^5.102.1",
     "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1"
   }
 }
