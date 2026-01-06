@@ -21,6 +21,33 @@ export async function activate(context: vscode.ExtensionContext) {
 	const user = session.account.label;
 	console.log('Authenticated GitHub user:', user);
 
+	// The command has been defined in the package.json file
+	// Now provide the implementation of the command with registerCommand
+	// The commandId parameter must match the command field in package.json
+	const disposable = vscode.commands.registerCommand('classroom-assignment.helloWorld', () => {
+		// The code you place here will be executed every time your command is executed
+
+		// Display a message box to the user
+		vscode.window.showInformationMessage('Hello World from Classroom Assignment in a web extension host!');
+	});
+
+	const paneAction = vscode.commands.registerCommand('classroom-assignment.showAssignmentPane', () => {
+		renderAssignmentPane();
+	});
+
+	context.subscriptions.push(paneAction);
+
+	context.subscriptions.push(disposable);
+}
+
+async function renderAssignmentPane() {
+	const session = await vscode.authentication.getSession(
+		'github',
+		['repo', 'actions:read'],
+		{ createIfNone: true }
+	);
+	//const user = session.account.label;
+
 	// TODO: Get owner of currently opened repository
 	// The owner is found in the policy assignment manifest
 	//if opened in a web extension host, get the repository information from the context
@@ -93,18 +120,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	} else {
 		console.log('No report.html file found in the grading report artifact.');
 	}
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('classroom-assignment.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Classroom Assignment in a web extension host!');
-	});
-
-	context.subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated
