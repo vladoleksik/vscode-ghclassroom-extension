@@ -16,6 +16,10 @@
       {
         "command": "classroom-assignment.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "classroom-assignment.showAssignmentPane",
+        "title": "See My Assignment"
       }
     ]
   },
