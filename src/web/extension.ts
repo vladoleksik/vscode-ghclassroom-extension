@@ -106,6 +106,10 @@ async function renderAssignmentPane() {
 	const zip = await JSZip.loadAsync(uint8Array);
 	const reportFile = zip.file('report.html');
 
+	const assignmentHTML = await getAssignmentStatement();
+
+	console.log('Assignment HTML:', assignmentHTML);
+
 	//Display the content of the report.html file in a new webview panel
 	if (reportFile) {
 		const reportContent = await reportFile.async('string');
@@ -120,6 +124,23 @@ async function renderAssignmentPane() {
 	} else {
 		console.log('No report.html file found in the grading report artifact.');
 	}
+}
+
+async function getAssignmentStatement() {
+	//get the assignment text from the README.md file in the repository
+	const assignmentText = vscode.workspace.workspaceFolders ? await vscode.workspace.fs.readFile(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'README.md')) : null;
+	console.log('Assignment text:', assignmentText ? new TextDecoder().decode(assignmentText) : 'No README.md file found.');
+	//Render the assignment text as HTML (support basic markdown features, as well as code blocks and math expressions)
+	let assignmentHTML = '';
+	if (assignmentText) {
+		const markdownText = new TextDecoder().decode(assignmentText);
+		//Use a simple markdown to HTML converter using the vscode API
+		assignmentHTML = await vscode.commands.executeCommand('markdown.api.render', markdownText).then((html: any) => {
+			return html.replace(/<span class="katex-mathml">([\s\S]*?)<\/span>/g, '')
+						.replace("[!NOTE]", ""); //remove [!NOTE] text
+		});
+	}
+	return assignmentHTML;
 }
 
 // This method is called when your extension is deactivated
