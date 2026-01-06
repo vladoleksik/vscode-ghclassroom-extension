@@ -158,8 +158,8 @@ async function renderAssignmentPane() {
 	if (reportFile) {
 		const reportContent = await reportFile.async('string');
 		const panel = vscode.window.createWebviewPanel(
-			'classroom-assignment-report',
-			'Grading Report',
+			'classroom-assignment-pane',
+			'My assignment',
 			vscode.ViewColumn.One,
 			{}
 		);
