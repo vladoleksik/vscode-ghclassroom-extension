@@ -163,7 +163,47 @@ async function renderAssignmentPane() {
 			vscode.ViewColumn.One,
 			{}
 		);
-		panel.webview.html = reportContent;
+		//panel.webview.html = reportContent;
+		//Embed the reportContent inside a basic HTML structure, with buttons to toggle between assignment text and report
+		panel.webview.html = `
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<meta http-equiv="Content-Security-Policy" 
+      content="default-src 'none'; 
+               script-src 'unsafe-inline'; 
+               style-src 'unsafe-inline'; 
+               frame-src 'self' data:;">
+		</head>
+		<body>
+			<h1>Assignment</h1>
+			<button onclick="showReport()">Show Grading Report</button>
+			<button onclick="showAssignment()">Show Assignment Text</button>
+			<script>
+				function showReport() {
+					document.getElementById('assignment-text').style.display = 'none';
+					document.getElementById('grading-report').style.display = 'block';
+				}
+				function showAssignment() {
+					document.getElementById('grading-report').style.display = 'none';
+					document.getElementById('assignment-text').style.display = 'block';
+				}
+			</script>
+			<div id="assignment-text" style="display: none;">
+				<h2>Assignment Text</h2>
+				${assignmentHTML}
+			</div>
+			<div id="grading-report" style="display: block;">
+				<h2>Grading Report</h2>
+				${runsSelectorHtml}
+				<iframe srcdoc='${reportContent.replace(/'/g, "&apos;").replace(/"/g, "&quot;")}' sandbox="allow-scripts" width="100%" height="600px">
+				</iframe>
+			</div>
+		</body>
+		</html>
+		`;
 		panel.webview.options = { enableScripts: true };
 	} else {
 		console.log('No report.html file found in the grading report artifact.');
