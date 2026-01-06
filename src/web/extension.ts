@@ -59,7 +59,51 @@ async function renderAssignmentPane() {
 	const owner = 'vladoleksik-cs-classes';
 	const repo = vscode.workspace.workspaceFolders?.[0].name;
 
-	// Use the VS Code API to get the action workflow run artifacts from a GitHub repository
+	//Use the GitHub API to get the action workflow runs for our GitHub repository
+	const runsResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs`, {
+		headers: {
+			'Authorization': `Bearer ${session?.accessToken}`,
+			'Accept': 'application/vnd.github+json',
+		},
+		method: 'GET',
+	});
+	const runsData = await runsResponse.json();
+	console.log('Fetched GitHub Actions runs:', runsData);
+
+	var runsSelectorHtml = '';
+	runsSelectorHtml += `<select id="workflow-runs-selector" onchange="onRunSelected()">`;
+	for (const run of runsData.workflow_runs) {
+		const createdDateTime = new Date(run.created_at);
+		const createdAgo = Math.floor((Date.now() - createdDateTime.getTime()) / 1000); // in seconds
+		//Format createdAgo in seconds, minutes, hours, days, weeks, months, years as appropriate
+		let createdAgoStr = '';
+		if (createdAgo < 60) {
+			createdAgoStr = `${createdAgo}s ago`;
+		} else if (createdAgo < 3600) {
+			createdAgoStr = `${Math.floor(createdAgo / 60)}m ago`;
+		} else if (createdAgo < 86400) {
+			createdAgoStr = `${Math.floor(createdAgo / 3600)}h ago`;
+		} else if (createdAgo < 604800) {
+			createdAgoStr = `${Math.floor(createdAgo / 86400)}d ago`;
+		} else if (createdAgo < 2592000) {
+			createdAgoStr = `${Math.floor(createdAgo / 604800)}w ago`;
+		} else if (createdAgo < 31536000) {
+			createdAgoStr = `${Math.floor(createdAgo / 2592000)}mo ago`;
+		} else {
+			createdAgoStr = `${Math.floor(createdAgo / 31536000)}y ago`;
+		}
+		if (run.status === 'in_progress' || run.status === 'queued') {
+			createdAgoStr = `pending`;
+		}
+		if(run.conclusion != 'success') {
+			createdAgoStr = `❗ ` + createdAgoStr;
+		}
+		console.log('#'+run.run_number+':', run.display_title, run.status, run.conclusion, createdAgoStr);
+		runsSelectorHtml += `<option value="${run.id}">#${run.run_number}: ${run.display_title} (${createdAgoStr})</option>`;
+	}
+	runsSelectorHtml += `</select>`;
+
+	// Use the GitHub API to get the action workflow run artifacts from a GitHub repository
 	// (This is just an example; replace with your own logic as needed)
 	const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/artifacts`, {
 		headers: {
