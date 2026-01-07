@@ -1,6 +1,19 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { AssignmentPanel } from '../panels/assignmentPanel';
+
+//IMPORTANT: This extension is structured somewhat according to the MVC pattern,
+// with this file (`src/web/extension.ts`) and `src/panels/assignmentPanel.ts` (check it out) being the *controller*;
+// the React components/app in `web/src/` (see `web/src/App.tsx`!) being the *view*;
+// while the *model* is less explicit and defined in files such as `web/src/GradingRun.ts` (feel free to move them somewhere proper).
+//
+// As you may notice, the `web` folder contains an npm project of its own, with its own `package.json` etc.
+//
+// When building the extension, the React app is built 
+// and its output (compiled CSS and JS) are linked into 
+// the extension's webview panel 
+// (in `src/panels/assignmentPanel.ts` (yes, manually...)).
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -10,6 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "classroom-assignment" is now active in the web extension host!');
 
+	// Authenticate the user with GitHub using the vscode authentication API
 	const session = await vscode.authentication.getSession(
 		'github',
 		['repo', 'actions:read'],
@@ -34,16 +48,21 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello World from Classroom Assignment in a web extension host!');
 	});
 
+	//Register a command to open the assignment pane
+	// The command must also be declared in the package.json file for it to be visible in the command palette
+	// (Ctrl+Shift+P, then type ">" and "See My Assignment" and select the command)
 	const paneAction = vscode.commands.registerCommand('classroom-assignment.showAssignmentPane', () => {
 		//renderAssignmentPane();
 		AssignmentPanel.render(context.extensionUri);
 	});
 
+	// Subscribe to the pane action so it is disposed when the extension is deactivated
 	context.subscriptions.push(paneAction);
 
 	context.subscriptions.push(disposable);
 }
 
+/**************************************************DEPRECATED FROM HERE******************************************** */
 async function renderAssignmentPane() {
 	const session = await vscode.authentication.getSession(
 		'github',
@@ -107,6 +126,7 @@ async function renderAssignmentPane() {
 	}
 	runsSelectorHtml += `</select>`;
 
+	//TODO: Download *and store* specific artifact on an on-demand basis, when the user selects a specific workflow run from the dropdown selector
 	// Use the GitHub API to get the action workflow run artifacts from a GitHub repository
 	// (This is just an example; replace with your own logic as needed)
 	const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/artifacts`, {
@@ -213,7 +233,14 @@ async function renderAssignmentPane() {
 		console.log('No report.html file found in the grading report artifact.');
 	}
 }
+/**************************************************DEPRECATED UNTIL HERE******************************************** */
 
+/**
+ * Get the assignment statement from the README.md file in the workspace folder, using the VSCode API to convert markdown to HTML.
+ * (including support for code blocks and math expressions)
+ * 
+ * @returns HTML resulting from parsing the README.md containing the assignment statement.
+ */
 async function getAssignmentStatement() {
 	//get the assignment text from the README.md file in the repository
 	const assignmentText = vscode.workspace.workspaceFolders ? await vscode.workspace.fs.readFile(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'README.md')) : null;
