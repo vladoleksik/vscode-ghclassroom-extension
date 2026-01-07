@@ -21,9 +21,15 @@ export async function activate(context: vscode.ExtensionContext) {
 	const user = session.account.label;
 	console.log('Authenticated GitHub user:', user);
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
+	// Store the session in the AssignmentPanel for later use
+	AssignmentPanel.login(session);
+
+	// Set the data getters for assignment text, workflow runs, and artifact report content - done for
+	AssignmentPanel.setAssignmentTextGetter(getAssignmentStatement);
+	AssignmentPanel.setWorkflowRunsGetter(getWorkflowRuns);
+	AssignmentPanel.setArtifactReportContentGetter(getArtifactContent);
+
+	// Dummy command to show "Hello World" message
 	const disposable = vscode.commands.registerCommand('classroom-assignment.helloWorld', () => {
 		// The code you place here will be executed every time your command is executed
 
@@ -32,7 +38,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 
 	const paneAction = vscode.commands.registerCommand('classroom-assignment.showAssignmentPane', () => {
-		renderAssignmentPane();
+		//renderAssignmentPane();
+		AssignmentPanel.render(context.extensionUri);
 	});
 
 	context.subscriptions.push(paneAction);
