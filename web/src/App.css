@@ -1,0 +1,24 @@
+.error-message-div {
+  text-align: center;
+  margin-block-start: 10em;
+  margin-block-end: 15em;
+}
+
+.empty-message-div {
+  text-align: center;
+  margin-block-start: 10em;
+  margin-block-end: 15em;
+}
+
+.empty-message-div .illustration {
+  font-size: 4em;
+  margin-block-end: 0.5em;
+}
+
+.titleBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1em;
+  border-bottom: 1px solid var(--vscode-editorGroup-border);
+}
