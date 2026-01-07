@@ -227,5 +227,106 @@ async function getAssignmentStatement() {
 	return assignmentHTML;
 }
 
+/**
+ * Getter function to fetch the workflow runs for the current repository from the GitHub API.
+ * 
+ * @param session The GitHub authentication session of the user.
+ * @returns Array of workflow runs (attempts for the assignment).
+ */
+async function getWorkflowRuns(session: vscode.AuthenticationSession): Promise<any[]> {
+	//Check if we have a workspace folder opened
+	if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+		console.log('No workspace folder opened.');
+		return [];
+	}
+	//console.log('Repository context:', vscode.workspace.workspaceFolders);
+
+	//Use the GitHub API to get the action workflow runs for our GitHub repository
+	//DISCUSSION: The owner name can be obtained dynamically by setting it in the assignment manifest file inside the repository
+	// (`assignment.tar`), and reading it from there.
+	// This assumes a new version for the assignment test environment generator (https://github.com/vladoleksik/cpp_linting, `policy.json` file).
+	// Then, it could be read from the file system here.
+	// For not, this is just not ready yet. I don't want to talk about this :)
+	const owner = 'vladoleksik-cs-classes';
+	const repo = vscode.workspace.workspaceFolders[0].name;
+
+	//Use the GitHub API to get the action workflow runs for our GitHub repository
+	const runsResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs`, {
+		headers: {
+			'Authorization': `Bearer ${session?.accessToken}`,
+			'Accept': 'application/vnd.github+json',
+		},
+		method: 'GET',
+	});
+	if (!runsResponse.ok) {
+		console.log('Failed to fetch workflow runs:', runsResponse.status, runsResponse.statusText);
+		return [];
+	}
+	const runsData = await runsResponse.json();
+	console.log('Fetched GitHub Actions runs:', runsData);
+	return runsData.workflow_runs;
+}
+
+/**
+ * Getter function to fetch the grading report content from a specific artifact URL for a workflow run.
+ * 
+ * @remarks The artifact URL is obtained from the workflow run data. This URL returns a list of artifacts for the run.
+ * The one named `grading-report` is downloaded (using a second fetch to a specified URL), unzipped, and the `report.html` file inside is read and returned as a string.
+ * 
+ * @param artifactUrl The URL to fetch the artifacts for a specific workflow run.
+ * @param session The GitHub authentication session of the user.
+ * @returns The content of the grading report as a string with a standalone HTML report page.
+ */
+async function getArtifactContent(artifactUrl: string, session: vscode.AuthenticationSession): Promise<string> {
+	// Use the GitHub API to list the artifacts for a specific workflow run
+	const response = await fetch(artifactUrl, {
+		headers: {
+			'Authorization': `Bearer ${session?.accessToken}`,
+			'Accept': 'application/vnd.github+json',
+		},
+		method: 'GET',
+	});
+	const data = await response.json();
+	console.log('Fetched GitHub Actions runs:', data);
+
+	// Get the list of artifacts
+	const artifacts = data.artifacts;
+
+	// Download the 'grading-report' artifact if it exists
+	const gradingArtifact = artifacts.find((artifact: any) => artifact.name === 'grading-report');
+	let blob: Blob = new Blob();
+	if (gradingArtifact) {
+		const downloadUrl = gradingArtifact.archive_download_url;
+		const downloadResponse = await fetch(downloadUrl, {
+			headers: {
+				'Authorization': `Bearer ${session?.accessToken}`,
+				'Accept': 'application/vnd.github+json',
+			},
+			method: 'GET',
+		});
+		blob = await downloadResponse.blob();
+		//console.log('Downloaded grading report artifact:', blob);
+	} else {
+		console.log('No grading report artifact found for this repository.');
+		return '';
+	}
+
+	// Unzip the blob and read the report.html file inside
+	const arrayBuffer = await blob.arrayBuffer();
+	const uint8Array = new Uint8Array(arrayBuffer);
+	// Use the JSZip library to unzip the blob
+	const JSZip = await import('jszip');
+	const zip = await JSZip.loadAsync(uint8Array);
+	const reportFile = zip.file('report.html');
+
+	if (reportFile) {
+		const reportContent = await reportFile.async('string');
+		return reportContent;
+	} else {
+		console.log('No report.html file found in the grading report artifact.');
+		return '';
+	}
+}
+
 // This method is called when your extension is deactivated
 export function deactivate() {}
