@@ -16,10 +16,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		{ createIfNone: true }
 	);
 
-	console.log('Got session:', session);
+	//console.log('Got session:', session);
 
-	const user = session.account.label;
-	console.log('Authenticated GitHub user:', user);
+	//const user = session.account.label;
+	//console.log('Authenticated GitHub user:', user);
 
 	// Store the session in the AssignmentPanel for later use
 	AssignmentPanel.login(session);
@@ -31,9 +31,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Dummy command to show "Hello World" message
 	const disposable = vscode.commands.registerCommand('classroom-assignment.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from Classroom Assignment in a web extension host!');
 	});
 
@@ -220,7 +217,7 @@ async function renderAssignmentPane() {
 async function getAssignmentStatement() {
 	//get the assignment text from the README.md file in the repository
 	const assignmentText = vscode.workspace.workspaceFolders ? await vscode.workspace.fs.readFile(vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, 'README.md')) : null;
-	console.log('Assignment text:', assignmentText ? new TextDecoder().decode(assignmentText) : 'No README.md file found.');
+	//console.log('Assignment text:', assignmentText ? new TextDecoder().decode(assignmentText) : 'No README.md file found.');
 	//Render the assignment text as HTML (support basic markdown features, as well as code blocks and math expressions)
 	let assignmentHTML = '';
 	if (assignmentText) {
