@@ -16,6 +16,10 @@
       {
         "command": "classroom-assignment.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "classroom-assignment.showAssignmentPane",
+        "title": "See My Assignment"
       }
     ]
   },
@@ -46,6 +50,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
+    "@vscode/codicons": "^0.0.44",
     "jszip": "^3.10.1"
   }
 }
