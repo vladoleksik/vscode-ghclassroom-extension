@@ -6,6 +6,7 @@
 		{
 			"type": "npm",
 			"script": "compile-web",
+			"dependsOn": "npm: install (web)",
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -14,6 +15,12 @@
 				"$ts-webpack",
 				"$tslint-webpack"
 			]
+		},
+		{
+			"type": "npm",
+			"path": "web",
+			"script": "install",
+			"label": "npm: install (web)"
 		},
 		{
 			"type": "npm",
