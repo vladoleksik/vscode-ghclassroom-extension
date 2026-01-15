@@ -6,31 +6,82 @@
 		{
 			"type": "npm",
 			"script": "compile-web",
-			"dependsOn": "npm: install (web)",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"problemMatcher": [
-				"$ts-webpack",
-				"$tslint-webpack"
-			]
+			"label": "Web: Initial Build",
+			"dependsOn": [
+                "Root: Install Dependencies",
+				"Web: Install Dependencies",
+				"Web: Build Production"
+			],
+			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"path": "web",
+			"script": "watch",
+            "label": "Web: Watch & Rebuild",
+			"isBackground": true,
+			"presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+			// smart workaround to keep dependency to a task without a concrete end
+            "problemMatcher": {
+                "owner": "custom",
+                "pattern": {
+                    "regexp": "^.*$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*Building.*", // busy working, please wait
+                    "endsPattern": "^.*Built in.*" // even though the process keeps running, you may proceed
+                }
+            }
+		},
+		{
+            "label": "Web: Build & Watch (Default)",
+			"dependsOn": [
+				"Web: Initial Build",
+				"Web: Watch & Rebuild"
+			],
+            // VS Code will wait for 'Web: Initial Build' to finish exit,
+            // AND for 'Web: Watch & Rebuild' to hit its 'endsPattern'.
+            "dependsOrder": "parallel",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+		},
+		{
+			"type": "npm",
+			"script": "install",
+            "label": "Root: Install Dependencies"
 		},
 		{
 			"type": "npm",
 			"path": "web",
 			"script": "install",
-			"label": "npm: install (web)"
+			"label": "Web: Install Dependencies"
 		},
 		{
 			"type": "npm",
-			"script": "watch-web",
-			"group": "build",
-			"isBackground": true,
-			"problemMatcher": [
-				"$ts-webpack-watch",
-				"$tslint-webpack-watch"
-			]
-		}
+			"path": "web",
+			"script": "build",
+            "label": "Web: Build Production",
+			"dependsOn": [
+				"Web: Install Dependencies",
+                "Web: Prepare Temp Directory"
+			],
+			"options": {
+				"env": {
+					"TMP": "${workspaceFolder}/web/.tmp",
+					"TEMP": "${workspaceFolder}/web/.tmp"
+				}
+			}
+		},
+		{
+            "label": "Web: Prepare Temp Directory",
+			"type": "shell",
+			"command": "mkdir -p web/.tmp"
+		},
 	]
 }

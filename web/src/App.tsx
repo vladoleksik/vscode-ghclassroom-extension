@@ -12,11 +12,9 @@ import {
   VscodeToolbarButton
 } from '@vscode-elements/react-elements';
 
-//IMPORTANT: Make sure to initialize this package as well before running the extension outside
-// This can be done with `npm install` *while in the /web directory*!
-// Then, run with `npm start` from the /web directory as well.
-// This will allow hot-reloading of the webview while developing the extension, without needing to restart vscode each time.
-// As it stands, you WILL STILL have to at least close and re-open the webview (the side-panel) to see changes.
+//IMPORTANT: Package initialization and build happens automatically when running the extension.
+// Hot-reloading is supported while developing, without needing to restart vscode each time.
+// To see changes, just hit the Refresh button in the webview.
 
 // Import custom components (views)
 import AssignmentText from './AssignmentText';
@@ -127,12 +125,16 @@ function App() {
     });
   }, []);
 
+  const handleRefresh = () => {
+    notifyExtension('refresh', 'Reload webview');
+  };
+
   return (
     <div className="App">
       <div className='titleBar'>
         <h1 className='titleBarLeft'>Assignment</h1>
         <VscodeToolbarContainer className='titleBarRight'>
-          <VscodeToolbarButton label='Refresh' id="refresh-btn" className='icon'><i className='codicon codicon-refresh'></i></VscodeToolbarButton>
+          <VscodeToolbarButton label='Refresh' id="refresh-btn" className='icon' onClick={handleRefresh}><i className='codicon codicon-refresh'></i></VscodeToolbarButton>
           <VscodeToolbarButton label='How to' id="docs-btn" className='icon'><i className='codicon codicon-book'></i></VscodeToolbarButton>
           <VscodeToolbarButton label='About' id="about-btn" className='icon'><i className='codicon codicon-info'></i></VscodeToolbarButton>
         </VscodeToolbarContainer>
