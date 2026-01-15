@@ -60,6 +60,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(paneAction);
 
 	context.subscriptions.push(disposable);
+
+	// Automatically open the assignment pane
+	if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+		AssignmentPanel.render(context.extensionUri);
+    }
 }
 
 /**************************************************DEPRECATED FROM HERE******************************************** */
