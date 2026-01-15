@@ -52,27 +52,35 @@ function GradingReports(
     let [selectedReportId, setSelectedReportId] = React.useState<string>(workflowRuns.length > 0 ? workflowRuns[0].id.toString() : '');
 
     useEffect(() => {
-        notifyExtension('workflowRunsRequest', 'Requesting workflow runs');
-        window.addEventListener('message', (e: MessageEvent) => {
-        const message = e.data;
-        if (message.type === 'workflowRuns') {
-            //console.log('Received workflow runs:', message.body);
-            // Here you can update state with the received workflow runs if needed
-            const runs = message.body;
-            const gradingRuns: GradingRun[] = runs.map((run: any) => ({
-            id: run.id,
-            status: run.status,
-            conclusion: run.conclusion,
-            created_at: run.created_at,
-            updated_at: run.updated_at,
-            artifacts_url: run.artifacts_url,
-            display_name: run.display_title,
-            run_number: run.run_number
-            }));
-            setWorkflowRuns(gradingRuns);
-            setSelectedReportId(gradingRuns.length > 0 ? gradingRuns[0].id.toString() : '');
-        }
-        });
+        const fetchWorkflowRuns = () => {
+            notifyExtension('workflowRunsRequest', 'Requesting workflow runs');
+        };
+
+        const handleMessage = (e: MessageEvent) => {
+            const message = e.data;
+            if (message.type === 'workflowRuns') {
+                const runs = message.body;
+                const gradingRuns: GradingRun[] = runs.map((run: any) => ({
+                    id: run.id,
+                    status: run.status,
+                    conclusion: run.conclusion,
+                    created_at: run.created_at,
+                    updated_at: run.updated_at,
+                    artifacts_url: run.artifacts_url,
+                    display_name: run.display_title,
+                    run_number: run.run_number
+                }));
+                setWorkflowRuns(gradingRuns);
+                setSelectedReportId(gradingRuns.length > 0 ? gradingRuns[0].id.toString() : '');
+            }
+        };
+
+        fetchWorkflowRuns();
+        window.addEventListener('message', handleMessage);
+
+        return () => {
+            window.removeEventListener('message', handleMessage);
+        };
     }, []);
     return <>
         {workflowRuns.length === 0 ?

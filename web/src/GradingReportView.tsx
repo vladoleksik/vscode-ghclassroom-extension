@@ -25,6 +25,9 @@ function GradingReport(
                 }
             };
             window.addEventListener('message', handleMessage);
+            return () => {
+                window.removeEventListener('message', handleMessage);
+            };
         }
     }, [selectedRun, notifyExtension]);
 
@@ -37,7 +40,9 @@ function GradingReport(
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         <span>Grading in progress...</span>
                     </div>
-                    <progress style={{ width: '100%', height: '4px' }} />
+                    <div className="progress-bar-container">
+                        <div className="progress-bar-fill"></div>
+                    </div>
                 </div>
             )}
             {reportContent && reportContent.trim() !== '' ?
@@ -50,7 +55,7 @@ function GradingReport(
                 <div className="empty-message-div">
                     <h2>📄</h2>
                     <h2>No report content available for now.</h2>
-                    <p>The grading report content from <code>{selectedRun?.artifacts_url}</code> will be displayed here once available.</p>
+                    <p>The grading report content will be displayed here once available.</p>
                 </div>
             }
         </div>
