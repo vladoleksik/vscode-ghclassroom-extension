@@ -28,8 +28,18 @@ function GradingReport(
         }
     }, [selectedRun, notifyExtension]);
 
+    const isPending = selectedRun.status === 'in_progress' || selectedRun.status === 'queued';
+
     return (
         <div>
+            {isPending && (
+                <div style={{ marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <span>Grading in progress...</span>
+                    </div>
+                    <progress style={{ width: '100%', height: '4px' }} />
+                </div>
+            )}
             {reportContent && reportContent.trim() !== '' ?
                 <VscodeScrollable style={{ height: '65vh', border: '1px solid var(--vscode-editorWidget-border)', borderRadius: '4px', boxSizing: 'border-box' }}>
                     {

@@ -49,6 +49,7 @@ function GradingReports(
         setWorkflowRuns: React.Dispatch<React.SetStateAction<GradingRun[]>>
     }
 ) {
+    let [selectedReportId, setSelectedReportId] = React.useState<string>(workflowRuns.length > 0 ? workflowRuns[0].id.toString() : '');
 
     useEffect(() => {
         notifyExtension('workflowRunsRequest', 'Requesting workflow runs');
@@ -73,8 +74,6 @@ function GradingReports(
         }
         });
     }, []);
-
-    let [selectedReportId, setSelectedReportId] = React.useState<string>(workflowRuns.length > 0 ? workflowRuns[0].id.toString() : '');
     return <>
         {workflowRuns.length === 0 ?
             <div className="empty-message-div">
