@@ -19,6 +19,8 @@ import {
 // Import custom components (views)
 import AssignmentText from './AssignmentText';
 import GradingReports from './GradingReportsView';
+import HowTo from './HowTo';
+import About from './About';
 
 // Use types (models) for data transfer
 // GradingRun is sort of a DTO
@@ -72,6 +74,7 @@ function App() {
   // State variables to be used by components
   let [assignmentStatement, setAssignmentText] = React.useState<string>('');
   let [gradingRuns, setGradingRuns] = React.useState<GradingRun[]>([]);
+  let [selectedTabIndex, setSelectedTabIndex] = React.useState<number>(0);
 
   /* --------------------UNUSED SAMPLE DATA BELOW-------------------- */
   // You may safely delete. It's only to get an idea of the data structure.
@@ -115,18 +118,27 @@ function App() {
   // Request assignment text from the extension when the component mounts (since it doesn't depend on props/state)
   useEffect(() => {
     notifyExtension('assignmentRequest', 'Requesting assignment text');
-    window.addEventListener('message', (e: MessageEvent) => {
+    const handleMessage = (e: MessageEvent) => {
       const message = e.data;
       if (message.type === 'assignmentText') {
-        //console.log('Received assignment text:', message.body);
-        // Here you can update state with the received assignment text if needed
         setAssignmentText(message.body);
       }
-    });
+    };
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
 
   const handleRefresh = () => {
     notifyExtension('refresh', 'Reload webview');
+  };
+
+  const handleTabChange = (e: any) => {
+    const newIndex = (e.detail && e.detail.index !== undefined)
+      ? e.detail.index
+      : (e.target as any).selectedIndex ?? 0;
+    setSelectedTabIndex(newIndex);
   };
 
   return (
@@ -135,11 +147,11 @@ function App() {
         <h1 className='titleBarLeft'>Assignment</h1>
         <VscodeToolbarContainer className='titleBarRight'>
           <VscodeToolbarButton label='Refresh' id="refresh-btn" className='icon' onClick={handleRefresh}><i className='codicon codicon-refresh'></i></VscodeToolbarButton>
-          <VscodeToolbarButton label='How to' id="docs-btn" className='icon'><i className='codicon codicon-book'></i></VscodeToolbarButton>
-          <VscodeToolbarButton label='About' id="about-btn" className='icon'><i className='codicon codicon-info'></i></VscodeToolbarButton>
+          <VscodeToolbarButton label='How to' id="docs-btn" className='icon' onClick={() => setSelectedTabIndex(2)}><i className='codicon codicon-book'></i></VscodeToolbarButton>
+          <VscodeToolbarButton label='About' id="about-btn" className='icon' onClick={() => setSelectedTabIndex(3)}><i className='codicon codicon-info'></i></VscodeToolbarButton>
         </VscodeToolbarContainer>
       </div>
-      <VscodeTabs selectedIndex={0}>
+      <VscodeTabs selectedIndex={selectedTabIndex} onChange={handleTabChange}>
         <VscodeTabHeader slot="header">Assignment text</VscodeTabHeader>
 
         <VscodeTabPanel>
@@ -150,6 +162,18 @@ function App() {
 
         <VscodeTabPanel>
           <GradingReports notifyExtension={notifyExtension} setWorkflowRuns={setGradingRuns} workflowRuns={gradingRuns} />
+        </VscodeTabPanel>
+
+        <VscodeTabHeader slot="header" className="hidden-tab-header">How to</VscodeTabHeader>
+
+        <VscodeTabPanel>
+          <HowTo />
+        </VscodeTabPanel>
+
+        <VscodeTabHeader slot="header" className="hidden-tab-header">About</VscodeTabHeader>
+
+        <VscodeTabPanel>
+          <About />
         </VscodeTabPanel>
       </VscodeTabs>
       <VscodeDivider />
