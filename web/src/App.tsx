@@ -12,15 +12,15 @@ import {
   VscodeToolbarButton
 } from '@vscode-elements/react-elements';
 
-//IMPORTANT: Make sure to initialize this package as well before running the extension outside
-// This can be done with `npm install` *while in the /web directory*!
-// Then, run with `npm start` from the /web directory as well.
-// This will allow hot-reloading of the webview while developing the extension, without needing to restart vscode each time.
-// As it stands, you WILL STILL have to at least close and re-open the webview (the side-panel) to see changes.
+//IMPORTANT: Package initialization and build happens automatically when running the extension.
+// Hot-reloading is supported while developing, without needing to restart vscode each time.
+// To see changes, just hit the Refresh button in the webview.
 
 // Import custom components (views)
 import AssignmentText from './AssignmentText';
 import GradingReports from './GradingReportsView';
+import HowTo from './HowTo';
+import About from './About';
 
 // Use types (models) for data transfer
 // GradingRun is sort of a DTO
@@ -74,7 +74,9 @@ function App() {
   // State variables to be used by components
   let [assignmentStatement, setAssignmentText] = React.useState<string>('');
   let [gradingRuns, setGradingRuns] = React.useState<GradingRun[]>([]);
-
+  let [selectedTabIndex, setSelectedTabIndex] = React.useState<number>(0);
+  let [howToOpened, setHowToOpened] = React.useState<boolean>(false);
+  let [aboutOpened, setAboutOpened] = React.useState<boolean>(false);
   /* --------------------UNUSED SAMPLE DATA BELOW-------------------- */
   // You may safely delete. It's only to get an idea of the data structure.
   const gradingReports = [
@@ -117,37 +119,62 @@ function App() {
   // Request assignment text from the extension when the component mounts (since it doesn't depend on props/state)
   useEffect(() => {
     notifyExtension('assignmentRequest', 'Requesting assignment text');
-    window.addEventListener('message', (e: MessageEvent) => {
+    const handleMessage = (e: MessageEvent) => {
       const message = e.data;
       if (message.type === 'assignmentText') {
-        //console.log('Received assignment text:', message.body);
-        // Here you can update state with the received assignment text if needed
         setAssignmentText(message.body);
       }
-    });
+    };
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
+
+  const handleRefresh = () => {
+    notifyExtension('refresh', 'Reload webview');
+  };
+
+  const handleTabChange = (e: any) => {
+    const newIndex = (e.detail && e.detail.index !== undefined)
+      ? e.detail.index
+      : (e.target as any).selectedIndex ?? 0;
+    setSelectedTabIndex(newIndex);
+  };
 
   return (
     <div className="App">
       <div className='titleBar'>
         <h1 className='titleBarLeft'>Assignment</h1>
         <VscodeToolbarContainer className='titleBarRight'>
-          <VscodeToolbarButton label='Refresh' id="refresh-btn" className='icon'><i className='codicon codicon-refresh'></i></VscodeToolbarButton>
-          <VscodeToolbarButton label='How to' id="docs-btn" className='icon'><i className='codicon codicon-book'></i></VscodeToolbarButton>
-          <VscodeToolbarButton label='About' id="about-btn" className='icon'><i className='codicon codicon-info'></i></VscodeToolbarButton>
+          <VscodeToolbarButton label='Refresh' id="refresh-btn" className='icon' onClick={handleRefresh}><i className='codicon codicon-refresh'></i></VscodeToolbarButton>
+          <VscodeToolbarButton label='How to' id="docs-btn" toggleable checked={howToOpened} className='icon' onClick={() => {howToOpened ? setHowToOpened(false) : setHowToOpened(true); setAboutOpened(false);}}><i className='codicon codicon-book'></i></VscodeToolbarButton>
+          <VscodeToolbarButton label='About' id="about-btn" toggleable checked={aboutOpened} className='icon' onClick={() => {aboutOpened ? setAboutOpened(false) : setAboutOpened(true); setHowToOpened(false);}}><i className='codicon codicon-info'></i></VscodeToolbarButton>
         </VscodeToolbarContainer>
       </div>
-      <VscodeTabs selectedIndex={0}>
-        <VscodeTabHeader slot="header">Assignment text</VscodeTabHeader>
+      <VscodeTabs selectedIndex={howToOpened ? 2 : (aboutOpened ? 3 : selectedTabIndex)}>
+        <VscodeTabHeader slot="header" onClick={() => {setAboutOpened(false); setHowToOpened(false); setSelectedTabIndex(0);}}>Assignment text</VscodeTabHeader>
 
         <VscodeTabPanel>
           <AssignmentText assignmentHTML={assignmentStatement}/>
         </VscodeTabPanel>
 
-        <VscodeTabHeader slot="header">Grading reports</VscodeTabHeader>
+        <VscodeTabHeader slot="header" onClick={() => {setAboutOpened(false); setHowToOpened(false); setSelectedTabIndex(1);}}>Grading reports</VscodeTabHeader>
 
         <VscodeTabPanel>
           <GradingReports notifyExtension={notifyExtension} setWorkflowRuns={setGradingRuns} workflowRuns={gradingRuns} />
+        </VscodeTabPanel>
+
+        <VscodeTabHeader slot="header" className="hidden-tab-header">How to</VscodeTabHeader>
+
+        <VscodeTabPanel>
+          <HowTo />
+        </VscodeTabPanel>
+
+        <VscodeTabHeader slot="header" className="hidden-tab-header">About</VscodeTabHeader>
+
+        <VscodeTabPanel>
+          <About />
         </VscodeTabPanel>
       </VscodeTabs>
       <VscodeDivider />

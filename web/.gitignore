@@ -27,3 +27,4 @@ yarn-error.log*
 # Build output directories
 /out
 /dist
+/.tmp

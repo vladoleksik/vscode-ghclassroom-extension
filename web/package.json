@@ -22,8 +22,9 @@
   },
   "source": "src/index.tsx",
   "scripts": {
-    "start": "parcel",
-    "build": "parcel build",
+    "start": "parcel watch src/index.tsx --dist-dir dist --public-url ./ --no-content-hash --no-cache",
+    "watch": "npm run start",
+    "build": "parcel build src/index.tsx --dist-dir dist --public-url ./ --no-content-hash --no-cache",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

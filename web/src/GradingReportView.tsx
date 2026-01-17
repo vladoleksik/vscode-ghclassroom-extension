@@ -25,11 +25,26 @@ function GradingReport(
                 }
             };
             window.addEventListener('message', handleMessage);
+            return () => {
+                window.removeEventListener('message', handleMessage);
+            };
         }
     }, [selectedRun, notifyExtension]);
 
+    const isPending = selectedRun.status === 'in_progress' || selectedRun.status === 'queued';
+
     return (
         <div>
+            {isPending && (
+                <div style={{ marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <span>Grading in progress...</span>
+                    </div>
+                    <div className="progress-bar-container">
+                        <div className="progress-bar-fill"></div>
+                    </div>
+                </div>
+            )}
             {reportContent && reportContent.trim() !== '' ?
                 <VscodeScrollable style={{ height: '65vh', border: '1px solid var(--vscode-editorWidget-border)', borderRadius: '4px', boxSizing: 'border-box' }}>
                     {
@@ -40,7 +55,7 @@ function GradingReport(
                 <div className="empty-message-div">
                     <h2>📄</h2>
                     <h2>No report content available for now.</h2>
-                    <p>The grading report content from <code>{selectedRun?.artifacts_url}</code> will be displayed here once available.</p>
+                    <p>The grading report content will be displayed here once available.</p>
                 </div>
             }
         </div>

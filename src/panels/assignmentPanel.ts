@@ -5,6 +5,7 @@ export class AssignmentPanel {
     // Singleton instance of the AssignmentPanel
     public static currentPanel: AssignmentPanel | undefined;
     private readonly _panel: vscode.WebviewPanel;
+    private readonly _extensionUri: vscode.Uri;
     private _disposables: vscode.Disposable[] = [];
     // Data getter functions to be set by the extension context (only in JavaScript...)
     public static getAssignmentText: () => Promise<string> = undefined as any;
@@ -18,6 +19,9 @@ export class AssignmentPanel {
     private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
         // Nice little Singleton
         this._panel = panel;
+
+        // Keep track of the extension URI
+        this._extensionUri = extensionUri;
 
         // Basically, a destructor
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
@@ -40,34 +44,30 @@ export class AssignmentPanel {
     }
     //Discussion: as it stands, if we later change the session, the getters won't use the new session automatically. Bummer.
 
-    public static render(extensionUri: vscode.Uri)
+    public static render(extensionUri: vscode.Uri, column: vscode.ViewColumn = vscode.ViewColumn.Two)
     {
         // If we already have a panel, show it.
         if(AssignmentPanel.currentPanel)
         {
-            AssignmentPanel.currentPanel._panel.reveal(vscode.ViewColumn.Two);
-            // Then, we should also refresh the content
-            AssignmentPanel.currentPanel!._refreshContent();
-            // Should we do this even if we are just creating it???
+            AssignmentPanel.currentPanel._panel.reveal(column);
+            return; // no, we shouldn't refresh here hahah
         }
         // Otherwise, create a new panel.
-        else
-        {
-            let panel = vscode.window.createWebviewPanel(
-                'classroom-assignment-pane',
-                'My assignment',
-                vscode.ViewColumn.Two,
-                {
-                    enableScripts: true,
-                    retainContextWhenHidden: true,
-                    localResourceRoots: [
-                        vscode.Uri.joinPath(extensionUri, 'web', 'dist')
-                    ]
-                }
-            );
-            panel.iconPath = vscode.Uri.joinPath(extensionUri, 'resources', 'icon.png');
-            AssignmentPanel.currentPanel = new AssignmentPanel(panel, extensionUri);
-        }
+        let panel = vscode.window.createWebviewPanel(
+            'classroom-assignment-pane',
+            'My assignment',
+            column,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+                localResourceRoots: [
+                    vscode.Uri.joinPath(extensionUri, 'web', 'dist'),
+                    vscode.Uri.joinPath(extensionUri, 'node_modules', '@vscode', 'codicons', 'dist')
+                ]
+            }
+        );
+        panel.iconPath = vscode.Uri.joinPath(extensionUri, 'resources', 'icon.png');
+        AssignmentPanel.currentPanel = new AssignmentPanel(panel, extensionUri);
     }
 
     /**
@@ -219,13 +219,20 @@ export class AssignmentPanel {
     }
 
     /**
-     * Triggers a refresh of the webview content by making it re-request data from the extension
-     * context.
+     * Triggers a refresh of the webview by disposing of the current
+     * panel and recreating it while preserving the view column.
      *
      */
     private _refreshContent() {
-        // How should we do that?
-        // Nevermind, nice to have but not essential for now
+        console.log('Recreating webview...');
+        
+        const currentColumn = this._panel.viewColumn;
+
+        this.dispose();
+
+        setTimeout(() => {
+            AssignmentPanel.render(this._extensionUri, currentColumn);
+        }, 100);
     }
 
     /**
@@ -261,6 +268,10 @@ export class AssignmentPanel {
                 AssignmentPanel.getArtifactReportContent(text).then(reportContent => {
                     this._sendMessage("gradingReport", reportContent);
                 });
+                return;
+            case "refresh":
+                console.log("Refresh received, calling _refreshContent");
+                this._refreshContent();
                 return;
             // As more "buttons" become available for the React app (view), more
             // message types from it will need to be handled here (e.g., refresh assignment, refresh workflow runs, etc.)
