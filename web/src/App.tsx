@@ -75,7 +75,8 @@ function App() {
   let [assignmentStatement, setAssignmentText] = React.useState<string>('');
   let [gradingRuns, setGradingRuns] = React.useState<GradingRun[]>([]);
   let [selectedTabIndex, setSelectedTabIndex] = React.useState<number>(0);
-
+  let [howToOpened, setHowToOpened] = React.useState<boolean>(false);
+  let [aboutOpened, setAboutOpened] = React.useState<boolean>(false);
   /* --------------------UNUSED SAMPLE DATA BELOW-------------------- */
   // You may safely delete. It's only to get an idea of the data structure.
   const gradingReports = [
@@ -147,18 +148,18 @@ function App() {
         <h1 className='titleBarLeft'>Assignment</h1>
         <VscodeToolbarContainer className='titleBarRight'>
           <VscodeToolbarButton label='Refresh' id="refresh-btn" className='icon' onClick={handleRefresh}><i className='codicon codicon-refresh'></i></VscodeToolbarButton>
-          <VscodeToolbarButton label='How to' id="docs-btn" className='icon' onClick={() => setSelectedTabIndex(2)}><i className='codicon codicon-book'></i></VscodeToolbarButton>
-          <VscodeToolbarButton label='About' id="about-btn" className='icon' onClick={() => setSelectedTabIndex(3)}><i className='codicon codicon-info'></i></VscodeToolbarButton>
+          <VscodeToolbarButton label='How to' id="docs-btn" toggleable checked={howToOpened} className='icon' onClick={() => {howToOpened ? setHowToOpened(false) : setHowToOpened(true); setAboutOpened(false);}}><i className='codicon codicon-book'></i></VscodeToolbarButton>
+          <VscodeToolbarButton label='About' id="about-btn" toggleable checked={aboutOpened} className='icon' onClick={() => {aboutOpened ? setAboutOpened(false) : setAboutOpened(true); setHowToOpened(false);}}><i className='codicon codicon-info'></i></VscodeToolbarButton>
         </VscodeToolbarContainer>
       </div>
-      <VscodeTabs selectedIndex={selectedTabIndex} onChange={handleTabChange}>
-        <VscodeTabHeader slot="header">Assignment text</VscodeTabHeader>
+      <VscodeTabs selectedIndex={howToOpened ? 2 : (aboutOpened ? 3 : selectedTabIndex)}>
+        <VscodeTabHeader slot="header" onClick={() => {setAboutOpened(false); setHowToOpened(false); setSelectedTabIndex(0);}}>Assignment text</VscodeTabHeader>
 
         <VscodeTabPanel>
           <AssignmentText assignmentHTML={assignmentStatement}/>
         </VscodeTabPanel>
 
-        <VscodeTabHeader slot="header">Grading reports</VscodeTabHeader>
+        <VscodeTabHeader slot="header" onClick={() => {setAboutOpened(false); setHowToOpened(false); setSelectedTabIndex(1);}}>Grading reports</VscodeTabHeader>
 
         <VscodeTabPanel>
           <GradingReports notifyExtension={notifyExtension} setWorkflowRuns={setGradingRuns} workflowRuns={gradingRuns} />
