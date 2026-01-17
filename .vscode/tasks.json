@@ -35,7 +35,10 @@
                     "beginsPattern": "^.*Building.*", // busy working, please wait
                     "endsPattern": "^.*Built in.*" // even though the process keeps running, you may proceed
                 }
-            }
+            },
+			"dependsOn": [
+				"Web: Clean Dist & Parcel Cache"
+			]
 		},
 		{
             "label": "Web: Build & Watch (Default)",
@@ -81,7 +84,23 @@
 		{
             "label": "Web: Prepare Temp Directory",
 			"type": "shell",
-			"command": "mkdir -p web/.tmp"
+			// if you use bash in windows (like me), bad luck to you (to me)...
+			"linux": {
+				"command": "mkdir -p web/.tmp"
+			},
+			"windows": {
+				"command": "if not exist web\\.tmp mkdir web\\.tmp"
+			},
 		},
+		{
+			"label": "Web: Clean Dist & Parcel Cache",
+			"type": "shell",
+			"linux": {
+				"command": "rm -rf web/dist web/.parcel-cache"
+			},
+			"windows": {
+				"command": "rmdir /s /q web\\dist & rmdir /s /q web\\.parcel-cache"
+			},
+		}
 	]
 }

@@ -23,8 +23,7 @@
   "source": "src/index.tsx",
   "scripts": {
     "start": "parcel watch src/index.tsx --dist-dir dist --public-url ./ --no-content-hash --no-cache",
-    "clean": "rm -rf dist .parcel-cache",
-    "watch": "npm run clean && npm run start",
+    "watch": "npm run start",
     "build": "parcel build src/index.tsx --dist-dir dist --public-url ./ --no-content-hash --no-cache",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
