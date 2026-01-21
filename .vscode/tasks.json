@@ -89,7 +89,7 @@
 				"command": "mkdir -p web/.tmp"
 			},
 			"windows": {
-				"command": "if not exist web\\.tmp mkdir web\\.tmp"
+				"command": "if (-not (Test-Path 'web/.tmp')) { New-Item -ItemType Directory -Path 'web/.tmp' | Out-Null }"
 			},
 		},
 		{
@@ -99,7 +99,7 @@
 				"command": "rm -rf web/dist web/.parcel-cache"
 			},
 			"windows": {
-				"command": "rmdir /s /q web\\dist & rmdir /s /q web\\.parcel-cache"
+				"command": "if (Test-Path 'web/dist') { Remove-Item -Recurse -Force 'web/dist' }; if (Test-Path 'web/.parcel-cache') { Remove-Item -Recurse -Force 'web/.parcel-cache' }"
 			},
 		}
 	]
