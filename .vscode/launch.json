@@ -26,8 +26,10 @@
 			"request": "launch",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionDevelopmentKind=web"
+				"--extensionDevelopmentKind=web",
+				"--skip-welcome"
 			],
+			"internalConsoleOptions": "neverOpen",
 			"outFiles": [
 				"${workspaceFolder}/dist/web/**/*.js"
 			],
