@@ -94,3 +94,6 @@ There are currently no known issues. Please report any bugs or feature requests 
 
 This project is provided under the terms in the repository (check the project root for a license file).
 
+## Current contributors
+This extension was developed by [@andreisas01](https://github.com/andreisas01) and [@vladoleksik](https://github.com/vladoleksik). Contributions from the open-source community are welcome! Please see the contributing guidelines for more details.
+
